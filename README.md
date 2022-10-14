@@ -64,3 +64,17 @@
 - \i f1db/f1db_dump.sql
 - ALTER DATABASE f1db SET search_path TO f1db, public; ?
 - pg_dump -Fc -v -f f1db/f1db_db.dump postgresql://postgres:postgres@localhost:54322/f1db
+
+## PostgreSQL VSC Extension
+- https://marketplace.visualstudio.com/items?itemName=ckolkman.vscode-postgres
+- https://github.com/Borvik/vscode-postgres
+- With .sql files, may need to manually set type to postgres for F5 to execute selection
+
+## pgFormatter VSC Extension
+
+- https://marketplace.visualstudio.com/items?itemName=bradymholt.pgformatter
+- https://github.com/bradymholt/vscode-pgFormatter
+- https://sqlformat.darold.net/
+- requires perl
+- ~/.pg_format: wrap-after=1
+
