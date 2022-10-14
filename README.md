@@ -10,7 +10,6 @@
 
 - pnpm add -D supabase
 - pnpm supabase -h
-- pnpm supabase login
 - pnpm supabase init
 - pnpm supabase start | stop | status
 - pnpm supabase db diff --use-migra --file [file_name]
@@ -21,8 +20,16 @@
 
 ## Factbook Database
 
-- postgresql://postgres:postgres@localhost:54322/postgres
+- cd factbook
+- psql postgresql://postgres:postgres@localhost:54322/postgres
 - create database factbook;
+- \c factbook
+- \i factbook_setup.sql
+- \set start '2017-02-01'
+- pg_dump -Fc -v -f factbook_db.dump postgresql://postgres:postgres@localhost:54322/factbook
+- pg_dump -v -f factbook_db.sql postgresql://postgres:postgres@localhost:54322/factbook
+- pg_restore -v -d postgresql://postgres:postgres@localhost:54322/factbook factbook_db.dump
+- psql postgresql://postgres:postgres@localhost:54322/factbook
 
 ## Chinook Sample Database
 
@@ -49,8 +56,8 @@ Unable to get pgloader on debian/wsl working with supabase postgresql in windows
 ## F1DB
 
 - https://raw.githubusercontent.com/tomredsky/f1db/master/f1db_postgres.sql
-- replace _id with id
-- remove _ from table names: constructor_results, constructor_standings, driver_standings, lap_times, pit_stops
+- replace \_id with id
+- remove \_ from table names: constructor_results, constructor_standings, driver_standings, lap_times, pit_stops
 - https://github.com/mikebranski/the-art-of-postgresql-docker
 - psql postgresql://postgres:postgres@localhost:54322/postgres
 - create database f1db;
@@ -58,4 +65,3 @@ Unable to get pgloader on debian/wsl working with supabase postgresql in windows
 - \i f1db/f1db_dump.sql
 - ALTER DATABASE f1db SET search_path TO f1db, public; ?
 - psql postgresql://postgres:postgres@localhost:54322/f1db
-
