@@ -1,4 +1,3 @@
--- f1db.psql is not pgtyped since it does not have .sql extension?
 select code,
     format('%s %s', forename, surname) as fullname,
     forename,
