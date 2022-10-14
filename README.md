@@ -20,21 +20,23 @@
 
 ## Factbook Database
 
+- pg_restore -v -d postgresql://postgres:postgres@localhost:54322 --create factbook/factbook_db.dump
+- psql postgresql://postgres:postgres@localhost:54322/factbook
+
 - cd factbook
 - psql postgresql://postgres:postgres@localhost:54322/postgres
 - create database factbook;
 - \c factbook
 - \i factbook_setup.sql
-- \set start '2017-02-01'
 - pg_dump -Fc -v -f factbook_db.dump postgresql://postgres:postgres@localhost:54322/factbook
 - pg_dump -v -f factbook_db.sql postgresql://postgres:postgres@localhost:54322/factbook
-- pg_restore -v -d postgresql://postgres:postgres@localhost:54322/factbook factbook_db.dump
-- psql postgresql://postgres:postgres@localhost:54322/factbook
 
-## Chinook Sample Database
+## Chinook Database
 
-Unable to get pgloader on debian/wsl working with supabase postgresql in windows docker.
+- pg_restore -v -d postgresql://postgres:postgres@localhost:54322 --create chinook/chinook_db.dump
+- psql postgresql://postgres:postgres@localhost:54322/chinook
 
+- Unable to get pgloader on debian/wsl working with supabase postgresql in windows docker.
 - https://wasm.supabase.com/
 - alter user postgres with password 'postgres';
 - create database chinook;
@@ -46,10 +48,11 @@ Unable to get pgloader on debian/wsl working with supabase postgresql in windows
 - pg_restore -v -d postgresql://postgres:postgres@localhost:54322 --create chinook/chinook_db.dump
 - pg_dump -v --data-only --inserts -f chinook/chinook_db_data.sql postgresql://postgres:postgres@localhost:54322/chinook
 - pg_restore -v -d postgresql://postgres:postgres@localhost:54322/postgres --schema-only chinook_db.dump
-- psql postgresql://postgres:postgres@localhost:54322/chinook
 
+## F1DB Database
 
-## F1DB
+- pg_restore -v -d postgresql://postgres:postgres@localhost:54322 --create f1db/f1db_db.dump
+- psql postgresql://postgres:postgres@localhost:54322/f1db
 
 - https://raw.githubusercontent.com/tomredsky/f1db/master/f1db_postgres.sql
 - replace \_id with id
@@ -60,4 +63,4 @@ Unable to get pgloader on debian/wsl working with supabase postgresql in windows
 - \c f1db
 - \i f1db/f1db_dump.sql
 - ALTER DATABASE f1db SET search_path TO f1db, public; ?
-- psql postgresql://postgres:postgres@localhost:54322/f1db
+- pg_dump -Fc -v -f f1db/f1db_db.dump postgresql://postgres:postgres@localhost:54322/f1db
