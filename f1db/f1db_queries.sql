@@ -404,3 +404,119 @@ from (
     cross join (
         values (true), (false), (null)) v2 (b);
 
+select a::text as
+    left,
+    b::text as
+    right,
+    (a = b)::text as "=",
+    (a <> b)::text as "<>",
+    (a is distinct from b)::text as "is distinct",
+    (a is not distinct from b)::text as "is not distinct from"
+from (
+    values (true),
+        (false),
+        (null)) t1 (a)
+    cross join (
+        values (true), (false), (null)) t2 (b);
+
+select races.date,
+    races.name,
+    drivers.surname as pole_position,
+    results.position
+from races
+    /*
+     * We want only the pole position from the races
+     * know the result of and still list the race when
+     * we don't know the results.
+     */
+    left join results on races.raceid = results.raceid
+        and results.grid = 1
+    left join drivers using (driverid)
+where date >= '2017-05-01'
+    and date < '2017-08-01'
+order by races.date;
+
+select a,
+    b
+from (
+    values (true),
+        (false),
+        (null)) v1 (a)
+    cross join (
+        values (true), (false), (null)) v2 (b)
+where a = null;
+
+select a,
+    b
+from (
+    values (true),
+        (false),
+        (null)) v1 (a)
+    cross join (
+        values (true), (false), (null)) v2 (b)
+where a is null;
+
+select x,
+    array_agg(x) over (order by x)
+from generate_series(1, 3) as t (x);
+
+select x,
+    array_agg(x) over (order by x rows between unbounded preceding and current row)
+from generate_series(1, 3) as t (x);
+
+select x,
+    array_agg(x) over (rows between current row and unbounded following)
+from generate_series(1, 3) as t (x);
+
+select x,
+    array_agg(x) over () as frame,
+    sum(x) over () as sum,
+    x::float / sum(x) over () as part
+from generate_series(1, 3) as t (x);
+
+select surname,
+    constructors.name,
+    position,
+    format('%s / %s', row_number() over (partition by constructorid order by position nulls last), count(*) over (partition by constructorid)) as "pos same constr"
+from results
+    join drivers using (driverid)
+    join constructors using (constructorid)
+where raceid = 890
+order by position;
+
+select surname,
+    constructors.name,
+    position,
+    format('%s / %s', row_number() over (partition by constructorid order by position nulls last), count(*) over (partition by constructorid)) as "pos same constr",
+    array_agg(position) over (partition by constructorid order by position nulls last rows between unbounded preceding and unbounded following) as agg
+from results
+    join drivers using (driverid)
+    join constructors using (constructorid)
+where raceid = 890
+order by position;
+
+select surname,
+    position as pos,
+    row_number() over (order by "fastest_lapSpeed"::numeric) as fast,
+    ntile(3) over w as "group",
+    lag(code, 1) over w as "prev",
+    lead(code, 1) over w as "next"
+from results
+    join drivers using (driverid)
+where raceid = 890
+window w as (order by position)
+order by position;
+
+select results.position_order as position,
+    drivers.code,
+    count(behind.*) as behind
+from results
+    join drivers using (driverid)
+    left join results behind on results.raceid = behind.raceid
+        and results.position_order < behind.position_order
+where results.raceid = 972
+    and results.position_order <= 3
+group by results.position_order,
+    drivers.code
+order by results.position_order;
+
