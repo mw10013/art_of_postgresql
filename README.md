@@ -70,6 +70,16 @@ psql postgresql://postgres:postgres@localhost:54322/f1db
 - ALTER DATABASE f1db SET search_path TO f1db, public; ?
 - pg_dump -Fc -v -f f1db/f1db_db.dump postgresql://postgres:postgres@localhost:54322/f1db
 
+## Access Database
+
+```bash
+createdb --echo --owner postgres -T template0 --maintenance-db postgresql://postgres:postgres@localhost:54322/postgres access
+pg_restore -v -d postgresql://postgres:postgres@localhost:54322/access access/access_db_20221015.dump
+```
+
+- pg_restore -v --schema-only --file access/access_schema_20221015.sql access/access_db_20221015.dump
+- pg_restore -v --data-only --file access/access_data_20221015.sql access/access_db_20221015.dump
+
 ## PostgreSQL VSC Extension
 
 - https://marketplace.visualstudio.com/items?itemName=ckolkman.vscode-postgres
