@@ -520,3 +520,113 @@ group by results.position_order,
     drivers.code
 order by results.position_order;
 
+select results.position_order,
+    drivers.code
+from results
+    join drivers using (driverid)
+where results.raceid = 972
+order by results.position_order;
+
+select results.position_order,
+    drivers.code,
+    count(behind.*) as behind,
+    array_agg(behind.position_order) as agg
+from results
+    join drivers using (driverid)
+    left join results behind on results.raceid = behind.raceid
+        and results.position_order < behind.position_order
+where results.raceid = 972
+group by results.position_order,
+    drivers.code
+order by results.position_order;
+
+select nspname,
+    typname
+from pg_type t
+    join pg_namespace n on n.oid = t.typnamespace
+where nspname = 'pg_catalog'
+    and typname !~ '(^_|^pg_|^reg|_handler$)'
+order by nspname,
+    typname;
+
+select year,
+    format('%s %s', forename, surname) as name,
+    count(*) as ran,
+    count(*) filter (where position = 1) as won,
+    count(*) filter (where position is not null) as finished,
+    sum(points) as points
+from races
+    join results using (raceid)
+    join drivers using (driverid)
+group by year,
+    drivers.driverid
+having bool_and(position = 1) is true
+order by year,
+    points desc;
+
+select year,
+    format('%s %s', forename, surname) as name,
+    count(*) as ran,
+    count(*) filter (where position = 1) as won,
+    count(*) filter (where position is not null) as finished,
+    sum(points) as points
+from races
+    join results using (raceid)
+    join drivers using (driverid)
+group by year,
+    drivers.driverid
+having bool_and(position is not distinct from 1) is true
+order by year,
+    points desc;
+
+select id,
+    regexp_split_to_table(str, ',')
+from (
+    values (1, 'fee > fi, foo > fum, eeny > meeny')) str_table (id, str);
+
+select id,
+    regexp_split_to_array(regexp_split_to_table(str, ','), ' > ') as categories
+from (
+    values (1, 'fee > fi, foo > fum, eeny > meeny')) str_table (id, str);
+
+with categories (id,
+    categories) as (
+    select id,
+        regexp_split_to_array(regexp_split_to_table(str, ','), ' > ') as categories
+    from (
+        values (1, 'fee > fi, foo > fum, eeny > meeny')) str_table (id, str))
+select id,
+    categories[1] as category,
+    categories[2] as sub_category
+from categories;
+
+select year,
+    drivers.code,
+    format('%s %s', forename, surname) as name,
+    count(*)
+from results
+    join races using (raceid)
+    join drivers using (driverid)
+where grid = 1
+    and position = 1
+group by year,
+    drivers.driverid
+order by count desc
+limit 10;
+
+select oprname,
+    oprcode::regproc,
+    oprleft::regtype,
+    oprright::regtype,
+    oprresult::regtype
+from pg_operator
+where oprname = '='
+    and oprleft::regtype = 'bigint'::regtype;
+
+-- create extension "uuid-ossp";
+select uuid_generate_v4 ()
+from generate_series(1, 10) as t (x);
+
+select pg_column_size(uuid 'fbb850cc-dd26-4904-96ef-15ad8dfaff07') as uuid_bytes,
+    pg_column_size('fbb850cc-dd26-4904-96ef-15ad8dfaff07') as uuid_string_bytes;
+
