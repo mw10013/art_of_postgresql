@@ -630,3 +630,52 @@ from generate_series(1, 10) as t (x);
 select pg_column_size(uuid 'fbb850cc-dd26-4904-96ef-15ad8dfaff07') as uuid_bytes,
     pg_column_size('fbb850cc-dd26-4904-96ef-15ad8dfaff07') as uuid_string_bytes;
 
+select pg_column_size(timestamp without time zone 'now'),
+    pg_column_size(timestamp with time zone 'now');
+
+-- set intervalstyle to postgres;
+-- set intervalstyle to postgres_verbose;
+select interval '1 month',
+    interval '2 weeks',
+    2 * interval '1 week',
+    78389 * interval '1 ms';
+
+select d::date as month,
+    (d + interval '1 month' - interval '1 day')::date as month_end,
+    (d + interval '1 month')::date as next_month,
+    (d + interval '1 month')::date - d::date as days
+from generate_series(date '2017-01-01', date '2017-12-01', interval '1 month') as t (d);
+
+select regexp_matches('This is a message with some tag.  #yo #tag #yowsa', '(#[^ ,]+)', 'g');
+
+select id,
+    regexp_matches(message, '(#[^ ,]+)', 'g') as match
+from (
+    values (1, 'This is my tweet. #yo #tweet #yowsa'),
+        (2, 'Postgresql is great.  #yowsa #postgresql')) as t (id, message);
+
+with matches as (
+    select id,
+        regexp_matches(message, '(#[^ ,]+)', 'g') as match
+    from (
+        values (1, 'This is my tweet. #yo #tweet #yowsa'),
+            (2, 'Postgresql is great.  #yowsa #postgresql')) as t (id, message))
+select id,
+    array_agg(match[1] order by match[1])
+from matches
+group by id
+order by id;
+
+select *
+from (
+    values (1, array['#tweet', '#yo', '#yowsa']),
+        (2, array['#yas', '#yowsa'])) as ht (id, hashtags),
+    unnest(hashtags) as t (tag);
+
+select tag, count(*)
+from (
+    values (1, array['#tweet', '#yo', '#yowsa']),
+        (2, array['#yas', '#yowsa'])) as ht (id, hashtags),
+    unnest(hashtags) as t (tag)
+group by tag
+order by count(*) desc;
