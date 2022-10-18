@@ -672,10 +672,29 @@ from (
         (2, array['#yas', '#yowsa'])) as ht (id, hashtags),
     unnest(hashtags) as t (tag);
 
-select tag, count(*)
+select tag,
+    count(*)
 from (
     values (1, array['#tweet', '#yo', '#yowsa']),
         (2, array['#yas', '#yowsa'])) as ht (id, hashtags),
     unnest(hashtags) as t (tag)
 group by tag
 order by count(*) desc;
+
+create table js (
+    id serial primary key,
+    extra json
+);
+
+insert into js (extra)
+    values ('[1, 2, 3, 4]'), ('[2, 3, 5, 8]'), ('{"key": "value"}');
+
+-- select * from js where extra @> '2';
+
+alter table js alter column extra type jsonb;
+
+select * from js where extra @> '2';
+select * from js where extra @> '[2,4]';
+
+table pg_available_extensions;
+
