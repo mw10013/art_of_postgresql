@@ -1,10 +1,14 @@
 -- drop schema sandbox cascade;
 begin;
+
 create schema if not exists sandbox;
+
 drop table if exists sandbox.lorem;
+
 create table sandbox.lorem (
     word text
 );
+
 with w (word) as (
     select regexp_split_to_table('Lorem ipsum dolor sit amet, consectetur
 adipiscing elit, sed do eiusmod tempor incididunt ut labore et
@@ -49,12 +53,15 @@ select word
 from w
 where word is not null
     and word <> '';
+
 create or replace function random (a int, b int)
     returns int volatile
     language sql
     as $$
     select a + ((b - a) * random())::int;
+
 $$;
+
 create or replace function sandbox.lorem (len int)
     returns text volatile
     language sql
@@ -67,12 +74,16 @@ create or replace function sandbox.lorem (len int)
 )
 select string_agg(w, ' ')
 from words;
+
 $$;
+
 create or replace function random (a timestamptz, b timestamptz)
     returns timestamptz volatile
     language sql
     as $$
     select a + random(0, extract(epoch from (b - a))::int) * interval '1 sec';
+
 $$;
+
 commit;
 

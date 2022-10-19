@@ -72,6 +72,11 @@ psql postgresql://postgres:postgres@localhost:54322/f1db
 
 ## Access Database
 
+- create database access;
+- psql postgresql://postgres:postgres@localhost:54322/access
+
+## Access Prisma Database
+
 ```bash
 createdb --echo --owner postgres -T template0 --maintenance-db postgresql://postgres:postgres@localhost:54322/postgres access_prisma
 pg_restore -v -d postgresql://postgres:postgres@localhost:54322/access_prisma access_prisma/access_prisma_db_20221015.dump
@@ -92,4 +97,5 @@ pg_restore -v -d postgresql://postgres:postgres@localhost:54322/access_prisma ac
 - https://github.com/bradymholt/vscode-pgFormatter
 - https://sqlformat.darold.net/
 - requires perl
+- vsc settings: pgFormatter Configuration: No Grouping: check
 - ~/.pg_format: wrap-after=1
