@@ -3,9 +3,11 @@ begin;
 -- create schema if not exists access;
 create table hub (
     hub_id serial primary key,
-    name text default 'Hub' ::text not null,
+    name text default 'Hub' ::text not null check (name <> ''),
     description text default ''::text not null,
-    heartbeat_at timestamptz
+    heartbeat_at timestamptz,
+    -- unique with no default?
+    api_token text default ''::text not null
 );
 
 create table point (
@@ -13,12 +15,11 @@ create table point (
     name text not null,
     description text default ''::text not null,
     position integer not null,
-    hub_id integer not null references hub (hub_id)
+    hub_id integer not null references hub (hub_id) on delete cascade,
+    unique (hub_id, position)
 );
 
-select *
-from pg_tables
-where schemaname = 'public';
+create index on point(hub_id);
 
 -- tables, views, sequences
 select n.nspname as "Schema",
@@ -96,6 +97,27 @@ where c.relkind in ('i', 'I', '')
     and pg_catalog.pg_table_is_visible(c.oid)
 order by 1,
     2;
+
+insert into hub (name, description)
+select 'Hub ' || hub_id,
+    'This is hub ' || hub_id
+from generate_series(1, 2) as t (hub_id);
+
+insert into point(name, position, hub_id)
+select name,
+    position,
+    hub_id
+from generate_series(1, 2) as t (hub_id),
+    lateral (
+        select 'Point ' || position as name,
+            position
+        from generate_series(1, 4) as tt (position)) as ttt;
+
+select *
+from hub;
+
+select *
+from point;
 
 rollback;
 
