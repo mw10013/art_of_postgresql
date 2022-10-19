@@ -73,12 +73,12 @@ psql postgresql://postgres:postgres@localhost:54322/f1db
 ## Access Database
 
 ```bash
-createdb --echo --owner postgres -T template0 --maintenance-db postgresql://postgres:postgres@localhost:54322/postgres access
-pg_restore -v -d postgresql://postgres:postgres@localhost:54322/access access/access_db_20221015.dump
+createdb --echo --owner postgres -T template0 --maintenance-db postgresql://postgres:postgres@localhost:54322/postgres access_prisma
+pg_restore -v -d postgresql://postgres:postgres@localhost:54322/access_prisma access_prisma/access_prisma_db_20221015.dump
 ```
 
-- pg_restore -v --schema-only --file access/access_schema_20221015.sql access/access_db_20221015.dump
-- pg_restore -v --data-only --file access/access_data_20221015.sql access/access_db_20221015.dump
+- pg_restore -v --schema-only --file access_prisma/access_prisma_schema_20221015.sql access/access_db_20221015.dump
+- pg_restore -v --data-only --file access_prisma/access_prisma_data_20221015.sql access_prisma/access_prisma_db_20221015.dump
 
 ## PostgreSQL VSC Extension
 
