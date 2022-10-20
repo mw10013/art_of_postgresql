@@ -122,10 +122,19 @@ insert into app_user (email, role)
 select *
 from app_user;
 
--- insert into access_hub (name, description)
--- select 'Hub ' || access_hub_id,
---     'This is hub ' || access_hub_id
--- from generate_series(1, 2) as t (access_hub_id);
+insert into access_hub (name, description, app_user_id)
+select name,
+    description,
+    app_user_id
+from generate_series(1, 2) as t (app_user_id),
+    (
+        select 'Hub ' || hub_index as name,
+            'This is hub ' || hub_index as description
+        from generate_series(1, 2) as tt (hub_index)) as ttt;
+
+select *
+from access_hub;
+
 -- insert into access_point (name, position, access_hub_id)
 -- select name,
 --     position,
@@ -135,8 +144,6 @@ from app_user;
 --         select 'Point ' || position as name,
 --             position
 --         from generate_series(1, 4) as tt (position)) as ttt;
--- select *
--- from access_hub;
 -- select *
 -- from access_point;
 rollback;
