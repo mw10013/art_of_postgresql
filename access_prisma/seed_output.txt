@@ -1,5 +1,19 @@
 Environment variables loaded from .env
 Running seed command `ts-node --require tsconfig-paths/register prisma/seed.ts` ...
+
+seedUser({ email: "ola.scarab@gmail.com", role: "admin" });
+const user = await prisma.user.create({
+    data: {
+      email,
+      role,
+      password: {
+        create: {
+          hash: hashedPassword,
+        },
+      },
+    },
+  });
+  return { user };
 { query: 'BEGIN', params: '[]' }
 {
   query: 'INSERT INTO "public"."User" ("id","email","role","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5) RETURNING "public"."User"."id"',
@@ -14,6 +28,8 @@ Running seed command `ts-node --require tsconfig-paths/register prisma/seed.ts` 
   params: '["cl9hjl4gk0000zpth6xe6as5s",1,0]'
 }
 { query: 'COMMIT', params: '[]' }
+
+seedUser({ email: "mw10013@gmail.com", role: "admin" });
 { query: 'BEGIN', params: '[]' }
 {
   query: 'INSERT INTO "public"."User" ("id","email","role","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5) RETURNING "public"."User"."id"',
@@ -28,6 +44,14 @@ Running seed command `ts-node --require tsconfig-paths/register prisma/seed.ts` 
   params: '["cl9hjl5zm0007zpthfg3rp0zz",1,0]'
 }
 { query: 'COMMIT', params: '[]' }
+
+seedCustomer({
+    email: "scarab2022@gmail.com",
+    role: "customer",
+    accessHubId: "cl2uwi6uv0030ybthbkls5w0i",
+    accessHubToken:
+      "d627713660c1891414ac55a6ccd1c1294292bb19a9e6be741f340782a531e331",
+  });
 { query: 'BEGIN', params: '[]' }
 {
   query: 'INSERT INTO "public"."User" ("id","email","role","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5) RETURNING "public"."User"."id"',
@@ -42,6 +66,22 @@ Running seed command `ts-node --require tsconfig-paths/register prisma/seed.ts` 
   params: '["cl9hjl5zz0014zpth572eui6u",1,0]'
 }
 { query: 'COMMIT', params: '[]' }
+
+const {
+    masterAccessUser,
+    guest1AccessUser,
+    guest2AccessUser,
+    guest3AccessUser,
+    guest4AccessUser,
+  } = await seedAccessUsers({ user });
+const masterAccessUser = await prisma.accessUser.create({
+    data: {
+      name: "Master",
+      description: "Access to everything",
+      code: "999",
+      userId: user.id,
+    },
+  });  
 { query: 'BEGIN', params: '[]' }
 {
   query: 'INSERT INTO "public"."AccessUser" ("name","description","code","userId","deletedAt") VALUES ($1,$2,$3,$4,$5) RETURNING "public"."AccessUser"."id"',
@@ -92,6 +132,80 @@ Running seed command `ts-node --require tsconfig-paths/register prisma/seed.ts` 
   params: '[5,1,0]'
 }
 { query: 'COMMIT', params: '[]' }
+
+seedAccessHub({
+    accessHubId,
+    accessHubName: `The ${email} BnB`,
+    accessHubToken,
+    user,
+    masterAccessUser,
+    guest1AccessUser,
+    guest2AccessUser,
+  });
+prisma.accessHub.create({
+    include: {
+      accessPoints: true,
+      user: {
+        include: {
+          accessUsers: {
+            include: { accessPoints: true },
+          },
+        },
+      },
+    },
+    data: {
+      id: accessHubId,
+      name: accessHubName,
+      userId: user.id,
+      apiToken: {
+        create: {
+          token: accessHubToken,
+        },
+      },
+      accessPoints: {
+        create: [
+          {
+            name: "Front Door",
+            position: 1,
+            accessUsers: {
+              connect: [
+                { id: masterAccessUser.id },
+                { id: guest1AccessUser.id },
+                { id: guest2AccessUser.id },
+              ],
+            },
+          },
+          {
+            name: "First Floor",
+            position: 2,
+            accessUsers: {
+              connect: [
+                { id: masterAccessUser.id },
+                { id: guest1AccessUser.id },
+              ],
+            },
+          },
+          {
+            name: "Second Floor",
+            position: 3,
+            accessUsers: {
+              connect: [
+                { id: masterAccessUser.id },
+                { id: guest1AccessUser.id },
+              ],
+            },
+          },
+          {
+            name: "Basement Door",
+            position: 4,
+            accessUsers: {
+              connect: [{ id: masterAccessUser.id }],
+            },
+          },
+        ],
+      },
+    },
+  });
 { query: 'BEGIN', params: '[]' }
 {
   query: 'INSERT INTO "public"."AccessHub" ("id","name","description","userId") VALUES ($1,$2,$3,$4) RETURNING "public"."AccessHub"."id"',
@@ -149,6 +263,18 @@ Running seed command `ts-node --require tsconfig-paths/register prisma/seed.ts` 
   query: 'INSERT INTO "public"."_AccessPointToAccessUser" ("A","B") VALUES ($1,$2) ON CONFLICT DO NOTHING',
   params: '[4,1]'
 }
+
+prisma.accessHub.create({
+    include: {
+      accessPoints: true,
+      user: {
+        include: {
+          accessUsers: {
+            include: { accessPoints: true },
+          },
+        },
+      },
+    },
 {
   query: 'SELECT "public"."AccessHub"."id", "public"."AccessHub"."name", "public"."AccessHub"."description", "public"."AccessHub"."heartbeatAt", "public"."AccessHub"."userId" FROM "public"."AccessHub" WHERE "public"."AccessHub"."id" = $1 LIMIT $2 OFFSET $3',
   params: '["cl2uwi6uv0030ybthbkls5w0i",1,0]'
@@ -174,6 +300,38 @@ Running seed command `ts-node --require tsconfig-paths/register prisma/seed.ts` 
   params: '[1,1,1,2,2,3,3,4,0]'
 }
 { query: 'COMMIT', params: '[]' }
+
+seedAccessHubEvents({ accessHub });
+for (const _ of Array(125).keys()) {
+    const accessUser =
+      accessHub.user.accessUsers[
+        Math.floor(Math.random() * accessHub.user.accessUsers.length)
+      ];
+    const accessPoint =
+      accessHub.accessPoints[
+        Math.floor(Math.random() * accessHub.accessPoints.length)
+      ];
+    if (accessUser.accessPoints.some((ap) => ap.id === accessPoint.id)) {
+      await prisma.accessEvent.create({
+        data: {
+          at: at.next().value,
+          access: "grant",
+          code: accessUser.code,
+          accessUserId: accessUser.id,
+          accessPointId: accessPoint.id,
+        },
+      });
+    } else {
+      await prisma.accessEvent.create({
+        data: {
+          at: at.next().value,
+          access: "deny",
+          code: accessUser.code,
+          accessPointId: accessPoint.id,
+        },
+      });
+    }
+  }
 { query: 'BEGIN', params: '[]' }
 {
   query: 'INSERT INTO "public"."AccessEvent" ("at","access","code","accessPointId") VALUES ($1,$2,$3,$4) RETURNING "public"."AccessEvent"."id"',
