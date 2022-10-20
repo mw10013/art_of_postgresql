@@ -7,6 +7,7 @@ create table app_user (
     created_at timestamptz default now() not null
 );
 
+-- deleted_at?
 create table access_user (
     access_user_id serial primary key,
     name text not null,
@@ -14,7 +15,9 @@ create table access_user (
     code text default ''::text not null,
     activate_code_at timestamptz,
     expire_code_at timestamptz,
-    app_user_id integer not null references app_user (app_user_id) on delete cascade
+    app_user_id integer not null references app_user (app_user_id) on delete cascade,
+    unique(app_user_id, name),
+    unique(app_user_id, code)
 );
 
 -- create schema if not exists access;
