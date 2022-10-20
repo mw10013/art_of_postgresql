@@ -135,16 +135,26 @@ from generate_series(1, 2) as t (app_user_id),
 select *
 from access_hub;
 
--- insert into access_point (name, position, access_hub_id)
--- select name,
---     position,
---     access_hub_id
--- from generate_series(1, 2) as t (access_hub_id),
---     lateral (
---         select 'Point ' || position as name,
---             position
---         from generate_series(1, 4) as tt (position)) as ttt;
--- select *
--- from access_point;
+insert into access_point (name, position, access_hub_id)
+select name,
+    position,
+    access_hub_id
+from generate_series(1, 4) as t (access_hub_id),
+    (
+        select 'Point ' || position as name,
+            position
+        from generate_series(1, 4) as tt (position)) as ttt;
+
+select *
+from access_point;
+
+select app_user.email,
+    count(distinct access_hub_id) as hubs,
+    count(*) as points
+from app_user
+    join access_hub using (app_user_id)
+    join access_point using (access_hub_id)
+group by app_user_id;
+
 rollback;
 
