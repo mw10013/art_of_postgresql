@@ -1,25 +1,43 @@
 begin;
 
+create table app_user (
+    app_user_id serial primary key,
+    email text not null unique,
+    role text not null check (role = 'customer' or role = 'admin'),
+    created_at timestamptz default now() not null
+);
+
+create table access_user (
+    access_user_id serial primary key,
+    name text not null,
+    description text default ''::text not null,
+    code text default ''::text not null,
+    activate_code_at timestamptz,
+    expire_code_at timestamptz,
+    app_user_id integer not null references app_user (app_user_id) on delete cascade
+);
+
 -- create schema if not exists access;
-create table hub (
-    hub_id serial primary key,
+create table access_hub (
+    access_hub_id serial primary key,
     name text default 'Hub' ::text not null check (name <> ''),
     description text default ''::text not null,
     heartbeat_at timestamptz,
     -- unique with no default?
-    api_token text default ''::text not null
+    api_token text default ''::text not null,
+    app_user_id integer not null references app_user (app_user_id) on delete cascade
 );
 
-create table point (
-    point_id serial primary key,
+create table access_point (
+    access_point_id serial primary key,
     name text not null,
     description text default ''::text not null,
     position integer not null,
-    hub_id integer not null references hub (hub_id) on delete cascade,
-    unique (hub_id, position)
+    access_hub_id integer not null references access_hub (access_hub_id) on delete cascade,
+    unique (access_hub_id, position)
 );
 
-create index on point(hub_id);
+create index on access_point (access_hub_id);
 
 -- tables, views, sequences
 select n.nspname as "Schema",
@@ -98,26 +116,28 @@ where c.relkind in ('i', 'I', '')
 order by 1,
     2;
 
-insert into hub (name, description)
-select 'Hub ' || hub_id,
-    'This is hub ' || hub_id
-from generate_series(1, 2) as t (hub_id);
-
-insert into point(name, position, hub_id)
-select name,
-    position,
-    hub_id
-from generate_series(1, 2) as t (hub_id),
-    lateral (
-        select 'Point ' || position as name,
-            position
-        from generate_series(1, 4) as tt (position)) as ttt;
+insert into app_user (email, role)
+    values ('appuser1@access.com', 'customer'), ('appuser2@access.com', 'customer'), ('admin@access.com', 'admin');
 
 select *
-from hub;
+from app_user;
 
-select *
-from point;
-
+-- insert into access_hub (name, description)
+-- select 'Hub ' || access_hub_id,
+--     'This is hub ' || access_hub_id
+-- from generate_series(1, 2) as t (access_hub_id);
+-- insert into access_point (name, position, access_hub_id)
+-- select name,
+--     position,
+--     access_hub_id
+-- from generate_series(1, 2) as t (access_hub_id),
+--     lateral (
+--         select 'Point ' || position as name,
+--             position
+--         from generate_series(1, 4) as tt (position)) as ttt;
+-- select *
+-- from access_hub;
+-- select *
+-- from access_point;
 rollback;
 
