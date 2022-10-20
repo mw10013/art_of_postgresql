@@ -46,6 +46,15 @@ create table access_point (
 
 create index on access_point (access_hub_id);
 
+create table access_point_to_access_user (
+    access_point_id integer not null references access_point(access_point_id) on delete cascade,
+    access_user_id integer not null references access_user(access_user_id) on delete cascade,
+    unique(access_point_id, access_user_id)
+);
+
+create index on access_point_to_access_user (access_point_id);
+create index on access_point_to_access_user (access_user_id);
+
 -- tables, views, sequences
 select n.nspname as "Schema",
     c.relname as "Name",
