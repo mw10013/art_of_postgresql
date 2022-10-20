@@ -2,7 +2,7 @@ begin;
 
 create table app_user (
     app_user_id serial primary key,
-    email text not null unique,
+    email text not null unique check (email <> ''),
     role text not null check (role = 'customer' or role = 'admin'),
     created_at timestamptz default now() not null
 );
@@ -10,14 +10,14 @@ create table app_user (
 -- deleted_at?
 create table access_user (
     access_user_id serial primary key,
-    name text not null,
+    name text not null check (name <> ''),
     description text default ''::text not null,
-    code text default ''::text not null,
+    code text not null check (code <> ''),
     activate_code_at timestamptz,
     expire_code_at timestamptz,
     app_user_id integer not null references app_user (app_user_id) on delete cascade,
-    unique(app_user_id, name),
-    unique(app_user_id, code)
+    unique (app_user_id, name),
+    unique (app_user_id, code)
 );
 
 -- create schema if not exists access;
@@ -33,9 +33,9 @@ create table access_hub (
 
 create table access_point (
     access_point_id serial primary key,
-    name text not null,
+    name text not null check (name <> ''),
     description text default ''::text not null,
-    position integer not null,
+    position integer not null check (position > 0),
     access_hub_id integer not null references access_hub (access_hub_id) on delete cascade,
     unique (access_hub_id, position)
 );
