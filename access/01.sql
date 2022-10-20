@@ -20,6 +20,8 @@ create table access_user (
     unique (app_user_id, code)
 );
 
+create index on access_user (app_user_id);
+
 -- create schema if not exists access;
 create table access_hub (
     access_hub_id serial primary key,
@@ -30,6 +32,8 @@ create table access_hub (
     api_token text default ''::text not null,
     app_user_id integer not null references app_user (app_user_id) on delete cascade
 );
+
+create index on access_hub (app_user_id);
 
 create table access_point (
     access_point_id serial primary key,
