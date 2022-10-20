@@ -47,13 +47,27 @@ create table access_point (
 create index on access_point (access_hub_id);
 
 create table access_point_to_access_user (
-    access_point_id integer not null references access_point(access_point_id) on delete cascade,
-    access_user_id integer not null references access_user(access_user_id) on delete cascade,
-    unique(access_point_id, access_user_id)
+    access_point_id integer not null references access_point (access_point_id) on delete cascade,
+    access_user_id integer not null references access_user (access_user_id) on delete cascade,
+    unique (access_point_id, access_user_id)
 );
 
 create index on access_point_to_access_user (access_point_id);
+
 create index on access_point_to_access_user (access_user_id);
+
+create table access_event (
+    access_event_id serial primary key,
+    at timestamptz not null,
+    access text not null check (access = 'grant' or access = 'deny'),
+    code text not null,
+    access_user_id integer references access_user (access_user_id) on delete cascade,
+    access_point_id integer references access_point (access_point_id) on delete cascade
+);
+
+create index on access_event (access_user_id);
+
+create index on access_event (access_point_id);
 
 -- tables, views, sequences
 select n.nspname as "Schema",
