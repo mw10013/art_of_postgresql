@@ -263,5 +263,8 @@ from access_point_to_access_user
     join access_hub using (access_hub_id)
 order by access_user_id, access_hub_id, access_point_id;
 
+select ceil(random() * 4)
+from generate_series(1, 15);
+
 rollback;
 
