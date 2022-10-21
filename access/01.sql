@@ -69,83 +69,85 @@ create index on access_event (access_user_id);
 
 create index on access_event (access_point_id);
 
+
+/*
 -- tables, views, sequences
 select n.nspname as "Schema",
-    c.relname as "Name",
-    case c.relkind
-    when 'r' then
-        'table'
-    when 'v' then
-        'view'
-    when 'm' then
-        'materialized view'
-    when 'i' then
-        'index'
-    when 'S' then
-        'sequence'
-    when 's' then
-        'special'
-    when 't' then
-        'TOAST table'
-    when 'f' then
-        'foreign table'
-    when 'p' then
-        'partitioned table'
-    when 'I' then
-        'partitioned index'
-    end as "Type",
-    pg_catalog.pg_get_userbyid(c.relowner) as "Owner"
+ c.relname as "Name",
+ case c.relkind
+ when 'r' then
+ 'table'
+ when 'v' then
+ 'view'
+ when 'm' then
+ 'materialized view'
+ when 'i' then
+ 'index'
+ when 'S' then
+ 'sequence'
+ when 's' then
+ 'special'
+ when 't' then
+ 'TOAST table'
+ when 'f' then
+ 'foreign table'
+ when 'p' then
+ 'partitioned table'
+ when 'I' then
+ 'partitioned index'
+ end as "Type",
+ pg_catalog.pg_get_userbyid(c.relowner) as "Owner"
 from pg_catalog.pg_class c
-    left join pg_catalog.pg_namespace n on n.oid = c.relnamespace
-    left join pg_catalog.pg_am am on am.oid = c.relam
+ left join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+ left join pg_catalog.pg_am am on am.oid = c.relam
 where c.relkind in ('r', 'p', 'v', 'm', 'S', 'f', '')
-    and n.nspname <> 'pg_catalog'
-    and n.nspname !~ '^pg_toast'
-    and n.nspname <> 'information_schema'
-    and pg_catalog.pg_table_is_visible(c.oid)
+ and n.nspname <> 'pg_catalog'
+ and n.nspname !~ '^pg_toast'
+ and n.nspname <> 'information_schema'
+ and pg_catalog.pg_table_is_visible(c.oid)
 order by 1,
-    2;
+ 2;
 
 -- indexes
 select n.nspname as "Schema",
-    c.relname as "Name",
-    case c.relkind
-    when 'r' then
-        'table'
-    when 'v' then
-        'view'
-    when 'm' then
-        'materialized view'
-    when 'i' then
-        'index'
-    when 'S' then
-        'sequence'
-    when 's' then
-        'special'
-    when 't' then
-        'TOAST table'
-    when 'f' then
-        'foreign table'
-    when 'p' then
-        'partitioned table'
-    when 'I' then
-        'partitioned index'
-    end as "Type",
-    pg_catalog.pg_get_userbyid(c.relowner) as "Owner",
-    c2.relname as "Table"
+ c.relname as "Name",
+ case c.relkind
+ when 'r' then
+ 'table'
+ when 'v' then
+ 'view'
+ when 'm' then
+ 'materialized view'
+ when 'i' then
+ 'index'
+ when 'S' then
+ 'sequence'
+ when 's' then
+ 'special'
+ when 't' then
+ 'TOAST table'
+ when 'f' then
+ 'foreign table'
+ when 'p' then
+ 'partitioned table'
+ when 'I' then
+ 'partitioned index'
+ end as "Type",
+ pg_catalog.pg_get_userbyid(c.relowner) as "Owner",
+ c2.relname as "Table"
 from pg_catalog.pg_class c
-    left join pg_catalog.pg_namespace n on n.oid = c.relnamespace
-    left join pg_catalog.pg_am am on am.oid = c.relam
-    left join pg_catalog.pg_index i on i.indexrelid = c.oid
-    left join pg_catalog.pg_class c2 on i.indrelid = c2.oid
+ left join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+ left join pg_catalog.pg_am am on am.oid = c.relam
+ left join pg_catalog.pg_index i on i.indexrelid = c.oid
+ left join pg_catalog.pg_class c2 on i.indrelid = c2.oid
 where c.relkind in ('i', 'I', '')
-    and n.nspname <> 'pg_catalog'
-    and n.nspname !~ '^pg_toast'
-    and n.nspname <> 'information_schema'
-    and pg_catalog.pg_table_is_visible(c.oid)
+ and n.nspname <> 'pg_catalog'
+ and n.nspname !~ '^pg_toast'
+ and n.nspname <> 'information_schema'
+ and pg_catalog.pg_table_is_visible(c.oid)
 order by 1,
-    2;
-
+ 2;
+ */
 insert into app_user (email, role)
     values ('appuser1@access.com', 'customer'), ('appuser2@access.com', 'customer'), ('admin@access.com', 'admin');
 
@@ -153,27 +155,24 @@ select *
 from app_user;
 
 insert into access_hub (name, description, app_user_id)
-select name,
-    description,
+select 'Hub ' || hub_index,
+    'This is hub ' || hub_index,
     app_user_id
-from generate_series(1, 2) as t (app_user_id),
-    (
-        select 'Hub ' || hub_index as name,
-            'This is hub ' || hub_index as description
-        from generate_series(1, 2) as tt (hub_index)) as ttt;
+from app_user,
+    generate_series(1, 2) as t (hub_index)
+where role = 'customer'
+order by app_user_id;
 
 select *
 from access_hub;
 
 insert into access_point (name, position, access_hub_id)
-select name,
+select 'Point ' || position,
     position,
     access_hub_id
-from generate_series(1, 4) as t (access_hub_id),
-    (
-        select 'Point ' || position as name,
-            position
-        from generate_series(1, 4) as tt (position)) as ttt;
+from access_hub,
+    generate_series(1, 4) as t (position)
+order by access_hub_id;
 
 select *
 from access_point;
