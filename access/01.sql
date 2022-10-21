@@ -205,28 +205,63 @@ from app_user
 group by app_user_id
 order by app_user_id;
 
-select access_user_id,
-    access_user.name,
-    app_user_id,
-    access_hub_id,
-    access_point_id
+
+/*
+insert into access_point_to_access_user (access_point_id, access_user_id)
+select access_point_id,
+ access_user_id
 from access_user
-    join access_hub using (app_user_id)
-    join access_point using (access_hub_id)
+ join access_hub using (app_user_id)
+ join access_point using (access_hub_id)
 where access_user.name = 'master';
 
 insert into access_point_to_access_user (access_point_id, access_user_id)
-select access_point_id, access_user_id
+select access_point_id,
+ access_user_id
+from access_user
+ join access_hub using (app_user_id)
+ join access_point using (access_hub_id)
+where access_user.name = 'guest1'
+ and access_hub.name = 'Hub 1';
+ */
+/*
+select access_user_id,
+ access_user.name,
+ access_hub_id,
+ access_hub.name,
+ access_point_id
+from access_user
+ join access_hub using (app_user_id)
+ join access_point using (access_hub_id)
+where (access_user.name = 'master')
+ or (access_user.name = 'guest1'
+ and access_hub.name = 'Hub 1')
+ or (access_user.name = 'guest2'
+ and access_hub.name = 'Hub 2')
+order by access_hub_id, access_user_id, access_point_id;        
+ */
+insert into access_point_to_access_user (access_point_id, access_user_id)
+select access_point_id,
+    access_user_id
 from access_user
     join access_hub using (app_user_id)
     join access_point using (access_hub_id)
-where access_user.name = 'master';
+where (access_user.name = 'master')
+    or (access_user.name = 'guest1'
+        and access_hub.name = 'Hub 1')
+    or (access_user.name = 'guest2'
+        and access_hub.name = 'Hub 2');
 
--- select * from access_point_to_access_user;
-
-select access_user_id, access_user.name
-from access_user
-where access_user.name = 'guest1';
+select access_user_id,
+    access_user.name,
+    access_hub_id,
+    access_point_id,
+    access_point.name
+from access_point_to_access_user
+    join access_user using (access_user_id)
+    join access_point using (access_point_id)
+    join access_hub using (access_hub_id)
+order by access_user_id, access_hub_id, access_point_id;
 
 rollback;
 
