@@ -205,5 +205,28 @@ from app_user
 group by app_user_id
 order by app_user_id;
 
+select access_user_id,
+    access_user.name,
+    app_user_id,
+    access_hub_id,
+    access_point_id
+from access_user
+    join access_hub using (app_user_id)
+    join access_point using (access_hub_id)
+where access_user.name = 'master';
+
+insert into access_point_to_access_user (access_point_id, access_user_id)
+select access_point_id, access_user_id
+from access_user
+    join access_hub using (app_user_id)
+    join access_point using (access_hub_id)
+where access_user.name = 'master';
+
+-- select * from access_point_to_access_user;
+
+select access_user_id, access_user.name
+from access_user
+where access_user.name = 'guest1';
+
 rollback;
 
