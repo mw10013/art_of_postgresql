@@ -175,15 +175,35 @@ from access_hub,
 order by access_hub_id;
 
 select *
-from access_point;
+from access_point
+limit 5;
 
-select app_user.email,
-    count(distinct access_hub_id) as hubs,
-    count(*) as points
+insert into access_user (name, code, app_user_id)
+select name,
+    code,
+    app_user_id
+from app_user,
+    (
+        values ('master', '666'),
+            ('guest1', '111'),
+            ('guest2', '222')) t (name, code)
+where role = 'customer'
+order by app_user_id;
+
+select *
+from access_user;
+
+select app_user_id,
+    app_user.email,
+    count(distinct access_user_id) as access_user_count,
+    count(distinct access_hub.access_hub_id) as access_hub_count,
+    count(distinct access_point_id) as access_point_count
 from app_user
+    join access_user using (app_user_id)
     join access_hub using (app_user_id)
-    join access_point using (access_hub_id)
-group by app_user_id;
+    join access_point on access_hub.access_hub_id = access_point.access_hub_id
+group by app_user_id
+order by app_user_id;
 
 rollback;
 
