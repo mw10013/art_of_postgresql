@@ -15,7 +15,7 @@ create table access_user (
     code text not null check (code <> ''),
     activate_code_at timestamptz,
     expire_code_at timestamptz,
-    app_user_id integer not null references app_user (app_user_id) on delete cascade,
+    app_user_id integer not null references app_user on delete cascade,
     unique (app_user_id, name),
     unique (app_user_id, code)
 );
@@ -30,7 +30,7 @@ create table access_hub (
     heartbeat_at timestamptz,
     -- unique with no default?
     api_token text default ''::text not null,
-    app_user_id integer not null references app_user (app_user_id) on delete cascade
+    app_user_id integer not null references app_user on delete cascade
 );
 
 create index on access_hub (app_user_id);
@@ -40,15 +40,15 @@ create table access_point (
     name text not null check (name <> ''),
     description text default ''::text not null,
     position integer not null check (position > 0),
-    access_hub_id integer not null references access_hub (access_hub_id) on delete cascade,
+    access_hub_id integer not null references access_hub on delete cascade,
     unique (access_hub_id, position)
 );
 
 create index on access_point (access_hub_id);
 
 create table access_point_to_access_user (
-    access_point_id integer not null references access_point (access_point_id) on delete cascade,
-    access_user_id integer not null references access_user (access_user_id) on delete cascade,
+    access_point_id integer not null references access_point on delete cascade,
+    access_user_id integer not null references access_user on delete cascade,
     unique (access_point_id, access_user_id)
 );
 
