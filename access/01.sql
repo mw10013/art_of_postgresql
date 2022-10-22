@@ -279,7 +279,54 @@ select access_event_id,
 from access_event
     left join access_user using (access_user_id)
     join access_point using (access_point_id)
-order by at desc limit 8;
+order by at desc
+limit 8;
+
+select ah.access_hub_id,
+    ah.name,
+    ah.description,
+    ap.access_point_id,
+    ap.name,
+    ap.position,
+    au.access_user_id,
+    au.name,
+    au.code
+from access_hub ah
+    join access_point ap using (access_hub_id)
+    join access_point_to_access_user using (access_point_id)
+    join access_user au using (access_user_id)
+where ah.app_user_id = 1
+order by ah.access_hub_id,
+    ap.position,
+    au.name
+limit 8;
+
+select ah.access_hub_id,
+    ah.name,
+    ah.description,
+    ap.access_point_id,
+    ap.name,
+    ap.position,
+    array_agg(au.access_user_id order by au.name) as access_user_ids
+from access_hub ah
+    join access_point ap using (access_hub_id)
+    join access_point_to_access_user using (access_point_id)
+    join access_user au using (access_user_id)
+where ah.app_user_id = 1
+group by ah.access_hub_id,
+    ap.access_point_id
+order by ah.access_hub_id,
+    ap.position
+limit 8;
+
+select ah.access_hub_id,
+    ah.name,
+    ah.description,
+    array_agg(ap.access_point_id order by ap.position) as access_point_ids
+from access_hub ah
+    join access_point ap using (access_hub_id)
+where ah.app_user_id = 1
+group by ah.access_hub_id;
 
 rollback;
 
