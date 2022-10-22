@@ -261,10 +261,25 @@ from access_point_to_access_user
     join access_user using (access_user_id)
     join access_point using (access_point_id)
     join access_hub using (access_hub_id)
-order by access_user_id, access_hub_id, access_point_id;
+order by access_user_id,
+    access_hub_id,
+    access_point_id
+limit 8;
 
-select ceil(random() * 4)
-from generate_series(1, 15);
+with times as (
+    select i,
+        (i - 1) % (select count(*) from access_user) + 1 as access_user_id,
+        current_time + i * interval '15 min' as ts
+    from generate_series(1, 15) as t (i))
+select
+    ts,
+    i, access_user_id, array_agg(access_point_id) as access_point_ids
+from times
+    join access_user using (access_user_id)
+    join access_point_to_access_user using (access_user_id)
+    join access_point using (access_point_id)
+group by ts, i, access_user_id
+order by i;
 
 rollback;
 
