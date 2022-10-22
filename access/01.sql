@@ -62,7 +62,7 @@ create table access_event (
     access text not null check (access = 'grant' or access = 'deny'),
     code text not null,
     access_user_id integer references access_user (access_user_id) on delete cascade,
-    access_point_id integer references access_point (access_point_id) on delete cascade
+    access_point_id integer not null references access_point (access_point_id) on delete cascade
 );
 
 create index on access_event (access_user_id);
@@ -233,27 +233,6 @@ limit 8;
 
 with times as (
     select i,
-        current_timestamp + i * interval '15 min' as ts,
-        (i - 1) % (
-            select count(*)
-            from access_user) + 1 as access_user_id
-        from generate_series(1, 15) as t (i))
-select ts,
-    i,
-    access_user_id,
-    array_agg(access_point_id) as access_point_ids
-from times
-    join access_user using (access_user_id)
-    join access_point_to_access_user using (access_user_id)
-    join access_point using (access_point_id)
-group by ts,
-    i,
-    access_user_id
-order by i
-limit 7;
-
-with times as (
-    select i,
         current_timestamp + i * interval '15 min' as at,
         (i - 1) % (
             select count(*)
@@ -280,8 +259,17 @@ from series
     join access_user using (access_user_id)
 order by at;
 
-select *
-from access_event;
+select access_event_id,
+    at,
+    access,
+    access_event.code,
+    access_user_id,
+    access_user.name,
+    access_point_id,
+    access_point.name
+from access_event
+    left join access_user using (access_user_id)
+    join access_point using (access_point_id);
 
 rollback;
 
