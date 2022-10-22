@@ -184,7 +184,7 @@ select name,
     app_user_id
 from app_user,
     (
-        values ('master', '666'),
+        values ('master', '999'),
             ('guest1', '111'),
             ('guest2', '222')) t (name, code)
 where role = 'customer'
@@ -233,11 +233,11 @@ limit 8;
 
 with times as (
     select i,
-        current_timestamp + i * interval '15 min' as at,
+        current_timestamp - i * interval '15 min' as at,
         (i - 1) % (
             select count(*)
             from access_user) + 1 as access_user_id
-        from generate_series(1, 15) as t (i)),
+        from generate_series(1, 75) as t (i)),
     series as (
         select at,
             i,
@@ -259,6 +259,15 @@ from series
     join access_user using (access_user_id)
 order by at;
 
+insert into access_event (at, access, code, access_point_id)
+select current_timestamp - i * interval '41 min' as at,
+    'deny',
+    '666',
+    (i - 1) % (
+        select count(*)
+        from access_point) + 1 as access_point_id
+from generate_series(1, 25) as t (i);
+
 select access_event_id,
     at,
     access,
@@ -269,7 +278,8 @@ select access_event_id,
     access_point.name
 from access_event
     left join access_user using (access_user_id)
-    join access_point using (access_point_id);
+    join access_point using (access_point_id)
+order by at desc limit 8;
 
 rollback;
 
