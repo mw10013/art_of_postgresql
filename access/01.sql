@@ -205,41 +205,6 @@ from app_user
 group by app_user_id
 order by app_user_id;
 
-
-/*
-insert into access_point_to_access_user (access_point_id, access_user_id)
-select access_point_id,
- access_user_id
-from access_user
- join access_hub using (app_user_id)
- join access_point using (access_hub_id)
-where access_user.name = 'master';
-
-insert into access_point_to_access_user (access_point_id, access_user_id)
-select access_point_id,
- access_user_id
-from access_user
- join access_hub using (app_user_id)
- join access_point using (access_hub_id)
-where access_user.name = 'guest1'
- and access_hub.name = 'Hub 1';
- */
-/*
-select access_user_id,
- access_user.name,
- access_hub_id,
- access_hub.name,
- access_point_id
-from access_user
- join access_hub using (app_user_id)
- join access_point using (access_hub_id)
-where (access_user.name = 'master')
- or (access_user.name = 'guest1'
- and access_hub.name = 'Hub 1')
- or (access_user.name = 'guest2'
- and access_hub.name = 'Hub 2')
-order by access_hub_id, access_user_id, access_point_id;        
- */
 insert into access_point_to_access_user (access_point_id, access_user_id)
 select access_point_id,
     access_user_id
@@ -268,18 +233,55 @@ limit 8;
 
 with times as (
     select i,
-        (i - 1) % (select count(*) from access_user) + 1 as access_user_id,
-        current_time + i * interval '15 min' as ts
-    from generate_series(1, 15) as t (i))
-select
-    ts,
-    i, access_user_id, array_agg(access_point_id) as access_point_ids
+        current_timestamp + i * interval '15 min' as ts,
+        (i - 1) % (
+            select count(*)
+            from access_user) + 1 as access_user_id
+        from generate_series(1, 15) as t (i))
+select ts,
+    i,
+    access_user_id,
+    array_agg(access_point_id) as access_point_ids
 from times
     join access_user using (access_user_id)
     join access_point_to_access_user using (access_user_id)
     join access_point using (access_point_id)
-group by ts, i, access_user_id
-order by i;
+group by ts,
+    i,
+    access_user_id
+order by i
+limit 7;
+
+with times as (
+    select i,
+        current_timestamp + i * interval '15 min' as at,
+        (i - 1) % (
+            select count(*)
+            from access_user) + 1 as access_user_id
+        from generate_series(1, 15) as t (i)),
+    series as (
+        select at,
+            i,
+            access_user_id,
+            array_agg(access_point_id) as access_point_ids
+        from times
+            join access_user using (access_user_id)
+            join access_point_to_access_user using (access_user_id)
+            join access_point using (access_point_id)
+        group by at, i, access_user_id
+        order by i)
+    insert into access_event (at, access, code, access_user_id, access_point_id)
+    select at,
+        'grant' as access,
+        code,
+        access_user_id,
+        access_point_ids[ceil(random() * array_length(access_point_ids, 1))] as access_point_id
+from series
+    join access_user using (access_user_id)
+order by at;
+
+select *
+from access_event;
 
 rollback;
 
